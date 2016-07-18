@@ -2,17 +2,18 @@ import pyparsing as pp
 
 
 DOT = '.'
-LPAREN, RPAREN = '(', ')'
+LPAREN = pp.Suppress('(')
+RPAREN = pp.Suppress(')')
 SESSION = 'session'
 QUERY = 'query'
 FILTER = 'filter'
 COUNT = 'count'
 
-SESSION_QUERY = SESSION + DOT + QUERY + LPAREN
-QUERY_EXPRS = pp.SkipTo(RPAREN)
-FILTER_CALL = RPAREN + DOT + FILTER + LPAREN
-FILTER_EXPRS = pp.SkipTo(RPAREN)
-COUNT_CALL = RPAREN + DOT + COUNT + LPAREN + RPAREN
+SESSION_QUERY = SESSION + DOT + QUERY
+QUERY_EXPRS = LPAREN + pp.SkipTo(RPAREN) + RPAREN
+FILTER_CALL = DOT + FILTER
+FILTER_EXPRS = LPAREN + pp.SkipTo(RPAREN) + RPAREN
+COUNT_CALL = DOT + COUNT + LPAREN + RPAREN
 
 
 def find(text):
@@ -28,9 +29,9 @@ def find(text):
 def replace(found_string):
     session_query, _, filter_call, filter_exprs, _ = found_string
     return (
-        session_query.rstrip() +
-        'sqlalchemy.func.count()' +
-        filter_call.rstrip() +
+        session_query +
+        '(sqlalchemy.func.count())' +
+        filter_call.rstrip() + "(" +
         _pretty_one_line(filter_exprs) +
         ').scalar()'
     )

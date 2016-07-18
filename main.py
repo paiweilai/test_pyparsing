@@ -13,7 +13,6 @@ def process(text):
         return text  # no change
 
     found_strings, intervals = zip(*found_results)
-
     new_strings = [
         sqla_count.replace(found_string) for found_string in found_strings
     ]
